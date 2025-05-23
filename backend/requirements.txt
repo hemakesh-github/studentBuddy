@@ -1,0 +1,15 @@
+fastapi==0.115.12
+uvicorn==0.34.2
+sqlalchemy==2.0.40
+pymysql==1.1.1
+python-dotenv==1.1.0
+pydantic==2.11.4
+python-jose[cryptography]==3.4.0
+passlib[bcrypt]==1.7.4
+python-multipart==0.0.20
+mysqlclient==2.2.7
+python-docx==1.1.2
+PyPDF2==3.0.1
+langchain==0.3.25
+langchain-groq==0.3.2
+
