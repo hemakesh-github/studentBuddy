@@ -65,12 +65,22 @@ npm install
 ```
 ## Running the Application
 
-### Start Backend Server
+### Start Backend Server(Linux)
 ```bash
 # Navigate to backend directory from studentbuddy
 
 cd backend
 source .venv/bin/activate
+cd app
+fastapi dev main.py
+```
+
+### Start Backend Server(windows)
+```bash
+# Navigate to backend directory from studentbuddy
+
+cd backend
+venv\Scripts\activate
 cd app
 fastapi dev main.py
 ```
