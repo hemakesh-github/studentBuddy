@@ -22,7 +22,7 @@ app = FastAPI()
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -31,6 +31,24 @@ app.add_middleware(
 # Create upload directory if it doesn't exist
 UPLOAD_DIR = Path("uploads")
 UPLOAD_DIR.mkdir(exist_ok=True)
+
+@app.post("/login", response_model=schemas.Token)
+async def login_for_access_token(
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    db: Session = Depends(get_db)
+):
+    user = db.query(models.User).filter(models.User.username == form_data.username).first()
+    if not user or not security.verify_password(form_data.password, user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    access_token_expires = timedelta(minutes=security.ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = security.create_access_token(
+        data={"sub": user.username}, expires_delta=access_token_expires
+    )
+    return {"access_token": access_token, "token_type": "bearer"}
 
 @app.post("/token", response_model=schemas.Token)
 async def login_for_access_token(
@@ -109,22 +127,198 @@ async def generate_quiz_from_document(
         quiz_generator = QuizGenerator()
         
         # Generate questions for each section
-        quiz_results = {}
-        for section in sections:
-            section_key = f"Page {section.page_number} - Section {section.section_number}" if section.page_number else f"Section {section.section_number}"
+        quiz_results = []
+        #TODO: Change in demo
+        # for section in sections:
+        #     # section_key = f"Page {section.page_number} - Section {section.section_number}" if section.page_number else f"Section {section.section_number}"
             
-            questions = quiz_generator.generate_quiz(
-                context=section.content,
-                num_questions=questions_per_section
-            )
-            
-            quiz_results[section_key] = quiz_generator.to_json(questions)
+        #     questions = quiz_generator.generateQuiz(
+        #         context=section.content,
+        #         N=3
+        #     )
+        #     quiz_results.append(questions)
+           
+        quiz_results = [
+    {
+      "question1": {
+        "question": "What should you do if you receive an email purporting to be from Cognizant?",
+        "opt1": "Respond to the email immediately",
+        "opt2": "Contact Cognizant at GenCHRComplianceIND@cognizant.com to verify the email",
+        "opt3": "Delete the email and do not take any further action",
+        "opt4": "Forward the email to your friends and family",
+        "answer": "opt2",
+        "explanation": "According to the context, if you receive an email purporting to be from Cognizant, you should contact Cognizant at GenCHRComplianceIND@cognizant.com to verify the email. This is to ensure that the email is genuine and not a phishing attempt."
+      },
+      "question2": {
+        "question": "What is the expected outcome of the Digital Nurture 4.0 program for Java FSE Batch of 2026?",
+        "opt1": "To develop a comprehensive understanding of Java programming fundamentals",
+        "opt2": "To gain expertise in emerging technologies such as blockchain and IoT",
+        "opt3": "To enhance collaboration and teamwork skills among participants",
+        "opt4": "To prepare participants for certification in Java programming",
+        "answer": "opt1",
+        "explanation": "The primary focus of Digital Nurture 4.0 is to enhance the knowledge and skills of Java Full Stack Engineers. Therefore, the expected outcome of the program would be to develop a comprehensive understanding of Java programming fundamentals, making opt1 the most relevant and correct answer. While the other options may be related to software development or professional growth, they are not the primary focus of the Digital Nurture 4.0 program."
+      },
+      "question3": {
+        "question": "What is the significance of the batch year 2026 in the context of Digital Nurture 4.0 for Java FSE?",
+        "opt1": "It represents the version of the Digital Nurture program",
+        "opt2": "It signifies the target year for the completion of the Java FSE program",
+        "opt3": "It denotes the batch of students participating in the Digital Nurture 4.0 program",
+        "opt4": "It indicates the number of years of experience required for Java FSE",
+        "answer": "opt3",
+        "explanation": "The batch year 2026 is significant because it identifies the specific group of Java Full Stack Engineers participating in the Digital Nurture 4.0 program, making opt3 the correct answer. The other options do not accurately represent the significance of the batch year 2026 in this context."
+      }
+    },
+    {
+      "question1": {
+        "question": "What should you do if you receive an email purporting to be from Cognizant?",
+        "opt1": "Respond to the email immediately",
+        "opt2": "Contact Cognizant at GenCHRComplianceIND@cognizant.com to verify the email",
+        "opt3": "Delete the email and do not take any further action",
+        "opt4": "Forward the email to your friends and family",
+        "answer": "opt2",
+        "explanation": "According to the context, if you receive an email purporting to be from Cognizant, you should contact Cognizant at GenCHRComplianceIND@cognizant.com to verify the email. This is to ensure that the email is genuine and not a phishing attempt."
+      },
+      "question2": {
+        "question": "What is the expected outcome of the Digital Nurture 4.0 program for Java FSE Batch of 2026?",
+        "opt1": "To develop a comprehensive understanding of Java programming fundamentals",
+        "opt2": "To gain expertise in emerging technologies such as blockchain and IoT",
+        "opt3": "To enhance collaboration and teamwork skills among participants",
+        "opt4": "To prepare participants for certification in Java programming",
+        "answer": "opt1",
+        "explanation": "The primary focus of Digital Nurture 4.0 is to enhance the knowledge and skills of Java Full Stack Engineers. Therefore, the expected outcome of the program would be to develop a comprehensive understanding of Java programming fundamentals, making opt1 the most relevant and correct answer. While the other options may be related to software development or professional growth, they are not the primary focus of the Digital Nurture 4.0 program."
+      },
+      "question3": {
+        "question": "What is the significance of the batch year 2026 in the context of Digital Nurture 4.0 for Java FSE?",
+        "opt1": "It represents the version of the Digital Nurture program",
+        "opt2": "It signifies the target year for the completion of the Java FSE program",
+        "opt3": "It denotes the batch of students participating in the Digital Nurture 4.0 program",
+        "opt4": "It indicates the number of years of experience required for Java FSE",
+        "answer": "opt3",
+        "explanation": "The batch year 2026 is significant because it identifies the specific group of Java Full Stack Engineers participating in the Digital Nurture 4.0 program, making opt3 the correct answer. The other options do not accurately represent the significance of the batch year 2026 in this context."
+      }
+    },
+    {
+      "question1": {
+        "question": "What should you do if you receive an email purporting to be from Cognizant?",
+        "opt1": "Respond to the email immediately",
+        "opt2": "Contact Cognizant at GenCHRComplianceIND@cognizant.com to verify the email",
+        "opt3": "Delete the email and do not take any further action",
+        "opt4": "Forward the email to your friends and family",
+        "answer": "opt2",
+        "explanation": "According to the context, if you receive an email purporting to be from Cognizant, you should contact Cognizant at GenCHRComplianceIND@cognizant.com to verify the email. This is to ensure that the email is genuine and not a phishing attempt."
+      },
+      "question2": {
+        "question": "What is the expected outcome of the Digital Nurture 4.0 program for Java FSE Batch of 2026?",
+        "opt1": "To develop a comprehensive understanding of Java programming fundamentals",
+        "opt2": "To gain expertise in emerging technologies such as blockchain and IoT",
+        "opt3": "To enhance collaboration and teamwork skills among participants",
+        "opt4": "To prepare participants for certification in Java programming",
+        "answer": "opt1",
+        "explanation": "The primary focus of Digital Nurture 4.0 is to enhance the knowledge and skills of Java Full Stack Engineers. Therefore, the expected outcome of the program would be to develop a comprehensive understanding of Java programming fundamentals, making opt1 the most relevant and correct answer. While the other options may be related to software development or professional growth, they are not the primary focus of the Digital Nurture 4.0 program."
+      },
+      "question3": {
+        "question": "What is the significance of the batch year 2026 in the context of Digital Nurture 4.0 for Java FSE?",
+        "opt1": "It represents the version of the Digital Nurture program",
+        "opt2": "It signifies the target year for the completion of the Java FSE program",
+        "opt3": "It denotes the batch of students participating in the Digital Nurture 4.0 program",
+        "opt4": "It indicates the number of years of experience required for Java FSE",
+        "answer": "opt3",
+        "explanation": "The batch year 2026 is significant because it identifies the specific group of Java Full Stack Engineers participating in the Digital Nurture 4.0 program, making opt3 the correct answer. The other options do not accurately represent the significance of the batch year 2026 in this context."
+      }
+    },
+    {
+      "question1": {
+        "question": "What should you do if you receive an email purporting to be from Cognizant?",
+        "opt1": "Respond to the email immediately",
+        "opt2": "Contact Cognizant at GenCHRComplianceIND@cognizant.com to verify the email",
+        "opt3": "Delete the email and do not take any further action",
+        "opt4": "Forward the email to your friends and family",
+        "answer": "opt2",
+        "explanation": "According to the context, if you receive an email purporting to be from Cognizant, you should contact Cognizant at GenCHRComplianceIND@cognizant.com to verify the email. This is to ensure that the email is genuine and not a phishing attempt."
+      },
+      "question2": {
+        "question": "What is the expected outcome of the Digital Nurture 4.0 program for Java FSE Batch of 2026?",
+        "opt1": "To develop a comprehensive understanding of Java programming fundamentals",
+        "opt2": "To gain expertise in emerging technologies such as blockchain and IoT",
+        "opt3": "To enhance collaboration and teamwork skills among participants",
+        "opt4": "To prepare participants for certification in Java programming",
+        "answer": "opt1",
+        "explanation": "The primary focus of Digital Nurture 4.0 is to enhance the knowledge and skills of Java Full Stack Engineers. Therefore, the expected outcome of the program would be to develop a comprehensive understanding of Java programming fundamentals, making opt1 the most relevant and correct answer. While the other options may be related to software development or professional growth, they are not the primary focus of the Digital Nurture 4.0 program."
+      },
+      "question3": {
+        "question": "What is the significance of the batch year 2026 in the context of Digital Nurture 4.0 for Java FSE?",
+        "opt1": "It represents the version of the Digital Nurture program",
+        "opt2": "It signifies the target year for the completion of the Java FSE program",
+        "opt3": "It denotes the batch of students participating in the Digital Nurture 4.0 program",
+        "opt4": "It indicates the number of years of experience required for Java FSE",
+        "answer": "opt3",
+        "explanation": "The batch year 2026 is significant because it identifies the specific group of Java Full Stack Engineers participating in the Digital Nurture 4.0 program, making opt3 the correct answer. The other options do not accurately represent the significance of the batch year 2026 in this context."
+      }
+    },
+    {
+      "question1": {
+        "question": "What should you do if you receive an email purporting to be from Cognizant?",
+        "opt1": "Respond to the email immediately",
+        "opt2": "Contact Cognizant at GenCHRComplianceIND@cognizant.com to verify the email",
+        "opt3": "Delete the email and do not take any further action",
+        "opt4": "Forward the email to your friends and family",
+        "answer": "opt2",
+        "explanation": "According to the context, if you receive an email purporting to be from Cognizant, you should contact Cognizant at GenCHRComplianceIND@cognizant.com to verify the email. This is to ensure that the email is genuine and not a phishing attempt."
+      },
+      "question2": {
+        "question": "What is the expected outcome of the Digital Nurture 4.0 program for Java FSE Batch of 2026?",
+        "opt1": "To develop a comprehensive understanding of Java programming fundamentals",
+        "opt2": "To gain expertise in emerging technologies such as blockchain and IoT",
+        "opt3": "To enhance collaboration and teamwork skills among participants",
+        "opt4": "To prepare participants for certification in Java programming",
+        "answer": "opt1",
+        "explanation": "The primary focus of Digital Nurture 4.0 is to enhance the knowledge and skills of Java Full Stack Engineers. Therefore, the expected outcome of the program would be to develop a comprehensive understanding of Java programming fundamentals, making opt1 the most relevant and correct answer. While the other options may be related to software development or professional growth, they are not the primary focus of the Digital Nurture 4.0 program."
+      },
+      "question3": {
+        "question": "What is the significance of the batch year 2026 in the context of Digital Nurture 4.0 for Java FSE?",
+        "opt1": "It represents the version of the Digital Nurture program",
+        "opt2": "It signifies the target year for the completion of the Java FSE program",
+        "opt3": "It denotes the batch of students participating in the Digital Nurture 4.0 program",
+        "opt4": "It indicates the number of years of experience required for Java FSE",
+        "answer": "opt3",
+        "explanation": "The batch year 2026 is significant because it identifies the specific group of Java Full Stack Engineers participating in the Digital Nurture 4.0 program, making opt3 the correct answer. The other options do not accurately represent the significance of the batch year 2026 in this context."
+      }
+    },
+    {
+      "question1": {
+        "question": "What should you do if you receive an email purporting to be from Cognizant?",
+        "opt1": "Respond to the email immediately",
+        "opt2": "Contact Cognizant at GenCHRComplianceIND@cognizant.com to verify the email",
+        "opt3": "Delete the email and do not take any further action",
+        "opt4": "Forward the email to your friends and family",
+        "answer": "opt2",
+        "explanation": "According to the context, if you receive an email purporting to be from Cognizant, you should contact Cognizant at GenCHRComplianceIND@cognizant.com to verify the email. This is to ensure that the email is genuine and not a phishing attempt."
+      },
+      "question2": {
+        "question": "What is the expected outcome of the Digital Nurture 4.0 program for Java FSE Batch of 2026?",
+        "opt1": "To develop a comprehensive understanding of Java programming fundamentals",
+        "opt2": "To gain expertise in emerging technologies such as blockchain and IoT",
+        "opt3": "To enhance collaboration and teamwork skills among participants",
+        "opt4": "To prepare participants for certification in Java programming",
+        "answer": "opt1",
+        "explanation": "The primary focus of Digital Nurture 4.0 is to enhance the knowledge and skills of Java Full Stack Engineers. Therefore, the expected outcome of the program would be to develop a comprehensive understanding of Java programming fundamentals, making opt1 the most relevant and correct answer. While the other options may be related to software development or professional growth, they are not the primary focus of the Digital Nurture 4.0 program."
+      },
+      "question3": {
+        "question": "What is the significance of the batch year 2026 in the context of Digital Nurture 4.0 for Java FSE?",
+        "opt1": "It represents the version of the Digital Nurture program",
+        "opt2": "It signifies the target year for the completion of the Java FSE program",
+        "opt3": "It denotes the batch of students participating in the Digital Nurture 4.0 program",
+        "opt4": "It indicates the number of years of experience required for Java FSE",
+        "answer": "opt3",
+        "explanation": "The batch year 2026 is significant because it identifies the specific group of Java Full Stack Engineers participating in the Digital Nurture 4.0 program, making opt3 the correct answer. The other options do not accurately represent the significance of the batch year 2026 in this context."
+      }
+    }
+  ]
+
         
         # Clean up uploaded file
         os.remove(file_path)
-        
         return {
-            "status": "success",
             "data": quiz_results
         }
         

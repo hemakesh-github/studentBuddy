@@ -1,11 +1,12 @@
 from groq import Groq
 import os
 from dotenv import load_dotenv
+from langchain_groq import ChatGroq
 
 class LLMConfig:
     def __init__(
         self,
-        model_name: str = "llama-3.3-70b-versatile",
+        model_name: str = "llama-3.1-8b-instant",
         temperature: float = 0.7,
         max_tokens: int = 1024
     ):
@@ -18,10 +19,12 @@ class LLMConfig:
             raise ValueError("GROQ_API_KEY not found in environment variables")
         
         # Initialize Groq client
-        self.client = Groq(api_key=self.api_key)
-        self.model_name = model_name
-        self.temperature = temperature
-        self.max_tokens = max_tokens
+        self.llm = ChatGroq(
+            groq_api_key=self.api_key,
+            model_name=model_name,
+            temperature=temperature,
+            max_tokens=max_tokens
+        )
 
 # Example usage
 if __name__ == "__main__":
