@@ -1,169 +1,90 @@
-import React, { useContext, useEffect, useState } from 'react';
-import { QuizContext } from '../context/QuizContext';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { generateQuiz } from '../api_services/api_services';
 import { getToken } from '../auth/Auth';
 
 function Home() {
     const navigate = useNavigate();
-    const { quizQuestions, setQuizQuestions, loading, setLoading, error, setError } = useContext(QuizContext);
-    const [selectedFile, setSelectedFile] = useState(null);
 
-    useEffect(() => {
-        const token = getToken();
-        if (!token) {
-            navigate('/login');
-        }
-    }, [navigate]);
+    
 
-    const handleUpload = async (e) => {
-        e.preventDefault();
-        setError(null);
-        setLoading(true);
-        
-        if (!selectedFile) {
-            setError("Please select a file");
-            setLoading(false);
-            return;
-        }
-
-        try {
-            const questions = await generateQuiz(selectedFile);
-            if (questions) {
-                setQuizQuestions(questions);
-                navigate('/quiz');
-            } else {
-                setError("Failed to generate quiz. Please try again.");
-            }
-        } catch (err) {
-            setError(err.message || "Error generating quiz");
-        } finally {
-            setLoading(false);
-        }
-    }
-
-    const handleFileChange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            setSelectedFile(file);
-            setError(null);
-        }
+    const handleCreateQuiz = () => {
+        navigate('/createQuiz');
     };
 
-    const handleRemoveFile = () => {
-        setSelectedFile(null);
+    const handleDoubtSolving = () => {
+        // Placeholder for doubt solving feature
+        console.log('Doubt solving feature coming soon!');
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-lg mx-auto">
-                <div className="bg-white rounded-xl shadow-2xl overflow-hidden">
-                    <div className="px-6 py-8 sm:p-10">
-                        <div className="text-center">
-                            <h1 className="text-3xl font-extrabold text-gray-900 mb-2">
-                                Generate Quiz
-                            </h1>
-                            <p className="text-gray-500 mb-8">
-                                Upload your document and get an interactive quiz instantly
-                            </p>
+        <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+                {/* Hero Section */}
+                <div className="text-center mb-16">
+                    <h1 className="text-4xl font-extrabold text-gray-900 sm:text-5xl md:text-6xl">
+                        Welcome to <span className="text-blue-600">StudentBuddy</span>
+                    </h1>
+                    <p className="mt-3 max-w-md mx-auto text-base text-gray-500 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
+                        Your AI-powered learning companion that transforms study materials into interactive quizzes and helps solve your doubts.
+                    </p>
+                </div>
+
+                {/* Main Features Section */}
+                <div className="grid grid-cols-1 gap-12 md:grid-cols-2 mb-16">
+                    {/* Quiz Generation Feature */}
+                    <div className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-shadow p-8">
+                        <div className="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center mb-6">
+                            <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                            </svg>
                         </div>
+                        <h2 className="text-2xl font-bold text-gray-900 mb-4">AI-Powered Quiz Generation</h2>
+                        <div className="space-y-4 mb-8 text-gray-500">
+                            <p>Upload your study materials and let our AI create comprehensive quizzes instantly.</p>
+                            <ul className="list-disc list-inside space-y-2 ml-4">
+                                <li>Smart question generation from your content</li>
+                                <li>Multiple choice questions with explanations</li>
+                                <li>Instant feedback on your answers</li>
+                                <li>Track your progress and understanding</li>
+                            </ul>
+                        </div>
+                        <button
+                            onClick={handleCreateQuiz}
+                            className="w-full flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
+                        >
+                            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                            </svg>
+                            Create New Quiz
+                        </button>
+                    </div>
 
-                        {error && (
-                            <div className="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-md">
-                                <div className="flex">
-                                    <div className="flex-shrink-0">
-                                        <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                                        </svg>
-                                    </div>
-                                    <div className="ml-3">
-                                        <p className="text-sm text-red-700">{error}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-
-                        <form onSubmit={handleUpload} className="space-y-6">
-                            <div className="space-y-4">
-                                <label className="block text-sm font-medium text-gray-700">
-                                    Upload Document
-                                </label>
-                                <div className={`mt-1 flex justify-center px-6 pt-5 pb-6 border-2 
-                                    ${selectedFile ? 'border-blue-400 bg-blue-50' : 'border-gray-300 border-dashed'} 
-                                    rounded-lg transition-colors duration-200`}>
-                                    <div className="space-y-1 text-center">
-                                        {!selectedFile ? (
-                                            <>
-                                                <svg className="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
-                                                    <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                                </svg>
-                                                <div className="flex text-sm text-gray-600">
-                                                    <label className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none">
-                                                        <span>Upload a file</span>
-                                                        <input 
-                                                            type="file" 
-                                                            accept=".pdf,.doc,.docx"
-                                                            onChange={handleFileChange}
-                                                            className="sr-only"
-                                                        />
-                                                    </label>
-                                                    <p className="pl-1">or drag and drop</p>
-                                                </div>
-                                                <p className="text-xs text-gray-500">
-                                                    PDF, DOC up to 10MB
-                                                </p>
-                                            </>
-                                        ) : (
-                                            <div className="flex items-center space-x-4">
-                                                <div className="flex-shrink-0">
-                                                    <svg className="h-8 w-8 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                                                        <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
-                                                    </svg>
-                                                </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <p className="text-sm font-medium text-gray-900 truncate">
-                                                        {selectedFile.name}
-                                                    </p>
-                                                    <p className="text-sm text-gray-500">
-                                                        {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
-                                                    </p>
-                                                </div>
-                                                <button
-                                                    type="button"
-                                                    onClick={handleRemoveFile}
-                                                    className="flex-shrink-0 text-gray-400 hover:text-gray-500"
-                                                >
-                                                    <span className="sr-only">Remove file</span>
-                                                    <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                                        <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                                                    </svg>
-                                                </button>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <button 
-                                type="submit" 
-                                disabled={loading}
-                                className={`w-full flex items-center justify-center px-4 py-3 border border-transparent 
-                                    text-base font-medium rounded-md text-white bg-blue-600 
-                                    ${loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'} 
-                                    focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 
-                                    transition-colors duration-200`}
-                            >
-                                {loading ? (
-                                    <>
-                                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                        </svg>
-                                        Generating Quiz...
-                                    </>
-                                ) : 'Generate Quiz'}
-                            </button>
-                        </form>
+                    {/* Doubt Solving Feature */}
+                    <div className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-shadow p-8">
+                        <div className="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center mb-6">
+                            <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                        <h2 className="text-2xl font-bold text-gray-900 mb-4">AI Doubt Solving</h2>
+                        <div className="space-y-4 mb-8 text-gray-500">
+                            <p>Get instant solutions to your academic doubts using our AI assistant.</p>
+                            <ul className="list-disc list-inside space-y-2 ml-4">
+                                <li>Clear explanations for complex concepts</li>
+                                <li>Step-by-step problem solving</li>
+                                <li>24/7 availability for quick help</li>
+                                <li>Support across multiple subjects</li>
+                            </ul>
+                        </div>
+                        <button
+                            onClick={handleDoubtSolving}
+                            className="w-full flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
+                        >
+                            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            Ask a Doubt (Coming Soon)
+                        </button>
                     </div>
                 </div>
             </div>

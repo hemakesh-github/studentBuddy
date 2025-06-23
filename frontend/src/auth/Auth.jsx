@@ -13,3 +13,14 @@ export const getToken = () => {
 export const removeToken = () => {
     sessionStorage.removeItem('token');
 }
+
+export const isLoggedIn = () => {
+    return sessionStorage.getItem('token') !== null;
+}
+export const onLogin = () => {
+    window.location.href = '/login';
+}
+export const onLogout = () => {
+    removeToken();
+    window.location.href = '/';
+}
