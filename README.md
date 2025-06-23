@@ -80,7 +80,7 @@ fastapi dev main.py
 # Navigate to backend directory from studentbuddy
 
 cd backend
-venv\Scripts\activate
+.venv\Scripts\activate
 cd app
 fastapi dev main.py
 ```
