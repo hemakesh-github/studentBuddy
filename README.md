@@ -10,15 +10,14 @@ studentBuddy/
 │   │   ├── main.py
 │   │   ├── auth/
 │   │   └── quiz/
-│   ├── .env
 │   └── requirements.txt
 └── frontend/
-    ├── src/
-    │   ├── components/
-    │   ├── context/
-    │   └── auth/
-    ├── .env
-    └── package.json
+|    ├── src/
+|    │   ├── components/
+|    │   ├── context/
+|    │   └── auth/
+|    └── package.json
+└── .env
 ```
 
 ## Prerequisites
