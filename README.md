@@ -10,15 +10,14 @@ studentBuddy/
 │   │   ├── main.py
 │   │   ├── auth/
 │   │   └── quiz/
-│   ├── .env
 │   └── requirements.txt
 └── frontend/
-    ├── src/
-    │   ├── components/
-    │   ├── context/
-    │   └── auth/
-    ├── .env
-    └── package.json
+|    ├── src/
+|    │   ├── components/
+|    │   ├── context/
+|    │   └── auth/
+|    └── package.json
+└── .env
 ```
 
 ## Prerequisites
@@ -30,7 +29,7 @@ studentBuddy/
 
 ### Clone the Repository
 ```bash
-git clone <repository-url>
+git clone https://github.com/hemakesh-github/studentBuddy.git
 cd studentBuddy
 ```
 
@@ -38,6 +37,7 @@ cd studentBuddy
 Create `.env` file:
 ```properties
 GROQ_API_KEY=your_groq_api_key
+DATABASE_URI=database_uri
 ```
 
 ### Backend Setup
