@@ -3,7 +3,6 @@ import { QuizContext } from '../context/QuizContext';
 import { useNavigate } from 'react-router-dom';
 import { generateQuiz } from '../api_services/api_services';
 import { getToken } from '../auth/Auth';
-import Quiz from './Quiz';
 
 function QuizForm() {
     const navigate = useNavigate();
@@ -38,9 +37,9 @@ function QuizForm() {
         try {
             const questions = await generateQuiz(selectedFile);
             if (questions) {
+                console.log(questions)
                 setQuizQuestions(questions.data);
                 if (questions.warning) {
-                    // Show warning but continue
                     console.warn(questions.warning);
                 }
                 navigate('/quiz');

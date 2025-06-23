@@ -1,52 +1,39 @@
-import React from 'react'
-import { useContext, useState, useEffect } from 'react'
+import React, { useContext, useState, useEffect } from 'react';
 import { QuizContext } from '../context/QuizContext';
 
 function Quiz() {
-  const { quizQuestions, loading, error } = useContext(QuizContext);
-  const [selectedAnswers, setSelectedAnswers] = useState({});
-  const [showExplanation, setShowExplanation] = useState({});
-  const [score, setScore] = useState(0);
-  const [showScore, setShowScore] = useState(false);
+    const { quizQuestions, loading, error } = useContext(QuizContext);
+    const [selectedAnswers, setSelectedAnswers] = useState({});
+    const [showExplanation, setShowExplanation] = useState({});
+    const [score, setScore] = useState(0);
+    const [showScore, setShowScore] = useState(false);
 
-  const totalQuestions = quizQuestions ? 
-    Object.values(quizQuestions).reduce((acc, section) => acc + Object.keys(section).length, 0) : 0;
+    console.log("Quiz Questions in Quiz Component:", quizQuestions); // Debugging
 
-  useEffect(() => {
-    // Calculate score whenever answers change
-    const correctAnswers = Object.entries(selectedAnswers).filter(([uniqueId, selected]) => {
-      const [sectionId, questionId] = uniqueId.split('_');
-      return selected === quizQuestions[sectionId][questionId].answer;
-    }).length;
-    
-    setScore(correctAnswers);
-    
-    // Show score when all questions are answered
-    if (Object.keys(selectedAnswers).length === totalQuestions) {
-      setShowScore(true);
+    const totalQuestions = quizQuestions ? 
+        Object.values(quizQuestions).reduce((acc, section) => acc + Object.keys(section).length, 0) : 0;
+
+    useEffect(() => {
+        const correctAnswers = Object.entries(selectedAnswers).filter(([uniqueId, selected]) => {
+            const [sectionId, questionId] = uniqueId.split('_');
+            return selected === quizQuestions[sectionId][questionId].answer;
+        }).length;
+
+        setScore(correctAnswers);
+
+        if (Object.keys(selectedAnswers).length === totalQuestions) {
+            setShowScore(true);
+        }
+    }, [selectedAnswers, quizQuestions, totalQuestions]);
+
+    if (loading) return <div>Loading...</div>;
+    if (error) return <div>{error}</div>;
+    if (!quizQuestions || !Object.keys(quizQuestions).length) {
+        return <div>No questions available.</div>;
     }
-  }, [selectedAnswers, quizQuestions, totalQuestions]);
 
-  if (loading) return <div className="p-4 text-center">Loading...</div>;
-  if (error) return <div className="p-4 text-red-500 text-center">{error}</div>;
-  if (!quizQuestions || !Object.keys(quizQuestions).length) {
-    return <div className="p-4 text-center">No questions available.</div>;
-  }
-
-  const handleAnswerSelect = (sectionId, questionId, option) => {
-    const uniqueId = `${sectionId}_${questionId}`;
-    setSelectedAnswers(prev => ({
-      ...prev,
-      [uniqueId]: option
-    }));
-    setShowExplanation(prev => ({
-      ...prev,
-      [uniqueId]: true
-    }));
-  };
-
-  return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    return (
+        <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-3xl mx-auto px-4">
         <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
           <h1 className="text-3xl font-bold text-center text-gray-800 mb-8">
@@ -123,7 +110,7 @@ function Quiz() {
         </div>
       </div>
     </div>
-  );
+    );
 }
 
 export default Quiz;

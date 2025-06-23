@@ -139,7 +139,9 @@ class DocxParser(DocumentParser):
             
         Returns:
             List[DocumentSection]: List of document sections
+
         """
+
         sections = []
         try:
             doc = docx.Document(file_path)
@@ -174,7 +176,6 @@ class DocxParser(DocumentParser):
         except Exception as e:
             logger.error(f"Error reading DOCX file {file_path}: {str(e)}")
             raise
-            
         return sections
 
 class TxtParser(DocumentParser):
@@ -228,7 +229,6 @@ class DocumentParserFactory:
             DocumentParser: Appropriate parser instance
         """
         file_extension = Path(file_path).suffix.lower()
-        
         parsers = {
             '.pdf': PDFParser,
             '.docx': DocxParser,
@@ -240,24 +240,3 @@ class DocumentParserFactory:
             raise ValueError(f"Unsupported file type: {file_extension}")
             
         return parser_class(max_section_length=max_section_length)
-
-# Example usage
-if __name__ == "__main__":
-    try:
-        # Create parser using factory
-        parser = DocumentParserFactory.create_parser(
-            "path/to/your/document.pdf",
-            max_section_length=1000
-        )
-        
-        # Parse document
-        sections = parser.parse("path/to/your/document.pdf")
-        
-        # Print sections
-        for section in sections:
-            logger.info(f"\nPage: {section.page_number}")
-            logger.info(f"Section: {section.section_number}")
-            logger.info(f"Content: {section.content[:200]}...")
-            
-    except Exception as e:
-        logger.error(f"Error: {str(e)}") 

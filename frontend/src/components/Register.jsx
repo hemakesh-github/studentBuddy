@@ -12,15 +12,18 @@ function Register() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const formData = new FormData();
-            formData.append('email', email);
-            formData.append('username', username);
-            formData.append('password', password);
-
-            const response = await performRegister(formData);
+            const data = {
+                email,
+                username,
+                password,
+            };
+            console.log(data);
+            const response = await performRegister(data);
+            console.log(response);
             navigate('/login');
         } catch (err) {
-            setError(err.response?.data?.detail || 'Registration failed');
+            const errorDetail = err.response?.data?.detail || 'Registration failed';
+            setError(typeof errorDetail === 'string' ? errorDetail : JSON.stringify(errorDetail));
         }
     };
 

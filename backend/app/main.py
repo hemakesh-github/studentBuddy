@@ -9,12 +9,17 @@ import os
 from pathlib import Path
 import asyncio
 import time
+import platform
 
 from app import auth
 from app.database import get_db, engine
 from app.auth import models, schemas, security
 from app.quiz.document_parser import DocumentParserFactory
 from app.quiz.quiz_generator import QuizGenerator
+
+# Workaround for Windows event loop issue
+if platform.system() == "Windows":
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 # Create database tables
 models.Base.metadata.create_all(bind=engine)
@@ -24,10 +29,10 @@ app = FastAPI()
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],  # Allow all origins
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["*"],  # Allow all methods
+    allow_headers=["*"],  # Allow all headers
 )
 
 # Create upload directory if it doesn't exist
@@ -35,7 +40,7 @@ UPLOAD_DIR = Path("uploads")
 UPLOAD_DIR.mkdir(exist_ok=True)
 
 # Add constants
-QUIZ_GENERATION_TIMEOUT = 90  # seconds
+QUIZ_GENERATION_TIMEOUT = 120  # Increase timeout to 120 seconds
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
 MAX_SECTIONS = 10
 
@@ -113,85 +118,83 @@ async def generate_quiz_from_document(
     current_user: models.User = Depends(security.get_current_active_user)
 ):
     """
-    Generate quiz questions from uploaded document with timeout and size checks
+    Generate quiz questions from uploaded document with timeout and size checks.
     """
+
     start_time = time.time()
     file_path = None
-    
+
     try:
         # Check file size
         file.file.seek(0, 2)  # Seek to end
         file_size = file.file.tell()
         file.file.seek(0)  # Reset file pointer
-        
         if file_size > MAX_FILE_SIZE:
             raise HTTPException(
                 status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
-                detail=f"File size exceeds maximum limit of {MAX_FILE_SIZE/1024/1024}MB"
+                detail=f"File size exceeds maximum limit of {MAX_FILE_SIZE / 1024 / 1024}MB"
             )
 
         # Save uploaded file
         file_path = UPLOAD_DIR / file.filename
         with file_path.open("wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
-        
+
         # Create parser with timeout
         parser = DocumentParserFactory.create_parser(
             str(file_path),
             max_section_length=1000
         )
-        
+
         # Parse document with timeout
         try:
-            sections = await asyncio.wait_for(
-                asyncio.create_task(parser.parse(str(file_path))), 
-                timeout=QUIZ_GENERATION_TIMEOUT/2  # Half time for parsing
-            )
-            
+            sections = parser.parse(str(file_path))
+
             if len(sections) > MAX_SECTIONS:
                 raise HTTPException(
                     status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
                     detail=f"Document contains too many sections (max {MAX_SECTIONS})"
                 )
-                
+
         except asyncio.TimeoutError:
             raise HTTPException(
                 status_code=status.HTTP_408_REQUEST_TIMEOUT,
                 detail="Document parsing is taking too long. Please try with a smaller document."
             )
-        
+
         # Check remaining time
         elapsed_time = time.time() - start_time
         remaining_time = QUIZ_GENERATION_TIMEOUT - elapsed_time
-        
+
         if remaining_time < 10:  # If less than 10 seconds remaining
             raise HTTPException(
                 status_code=status.HTTP_408_REQUEST_TIMEOUT,
                 detail="Not enough time remaining to generate questions. Please try with a smaller document."
             )
-        
+
+
         # Initialize quiz generator
         quiz_generator = QuizGenerator()
         quiz_results = []
-        
+
         # Generate questions with dynamic timeout
         try:
             time_per_section = remaining_time / len(sections)
             for section in sections:
                 questions = await asyncio.wait_for(
-                    asyncio.create_task(quiz_generator.generateQuiz(
+                    quiz_generator.generateQuiz(
                         context=section.content,
                         N=min(questions_per_section, 5)  # Limit questions per section
-                    )),
+                    ),
                     timeout=time_per_section
                 )
                 quiz_results.append(questions)
-                
+
                 # Update remaining time
                 elapsed_time = time.time() - start_time
                 if elapsed_time > QUIZ_GENERATION_TIMEOUT * 0.9:  # 90% of timeout
                     break
-                    
+
         except asyncio.TimeoutError:
             if quiz_results:  # Return partial results if we have any
                 return {
@@ -207,17 +210,16 @@ async def generate_quiz_from_document(
             # Clean up uploaded file
             if file_path and file_path.exists():
                 os.remove(file_path)
-            
         return {
             "data": quiz_results,
             "processing_time": round(time.time() - start_time, 2)
         }
-        
+
     except HTTPException as he:
         if file_path and file_path.exists():
             os.remove(file_path)
         raise he
-        
+
     except Exception as e:
         if file_path and file_path.exists():
             os.remove(file_path)
@@ -225,3 +227,13 @@ async def generate_quiz_from_document(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"An error occurred during quiz generation: {str(e)}"
         )
+
+def outputCheck(self, r):
+    """
+    Validate the output structure.
+    """
+    if not isinstance(r, dict):
+        return False
+    if 'answer' not in r or r['answer'] not in ['opt1', 'opt2', 'opt3', 'opt4']:
+        return False
+    return True

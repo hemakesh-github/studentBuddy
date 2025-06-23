@@ -12,14 +12,15 @@ export const performLogin = async (formData) => {
     return response.data;
 }
 
-export const performRegister = async (formData) => {
-    const response = await axios.post(`${API_URL}/register`, formData, {
+export const performRegister = async (data) => {
+    const response = await axios.post('http://localhost:8000/users/', data, {
         headers: {
-            'Content-Type': 'multipart/form-data',
+            'Content-Type': 'application/json',
         },
     });
     return response.data;
 }
+
 export const generateQuiz = async (file) => {
     try {
         const token = getToken(); // Assuming getToken is a function that retrieves the token from storage
@@ -38,7 +39,7 @@ export const generateQuiz = async (file) => {
             }
         });
 
-        return response.data.data;
+        return response.data;
     } catch (error) {
         console.error('Error generating quiz:', error);
         return null;
