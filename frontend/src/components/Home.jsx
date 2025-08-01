@@ -59,14 +59,14 @@ function Home() {
                     </div>
 
                     {/* Doubt Solving Feature */}
-                    <div className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-shadow p-8">
+                    <div className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-shadow p-8 flex flex-col h-full">
                         <div className="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center mb-6">
                             <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                         </div>
                         <h2 className="text-2xl font-bold text-gray-900 mb-4">AI Doubt Solving</h2>
-                        <div className="space-y-4 mb-8 text-gray-500">
+                        <div className="space-y-4 text-gray-500 flex-1">
                             <p>Get instant solutions to your academic doubts using our AI assistant.</p>
                             <ul className="list-disc list-inside space-y-2 ml-4">
                                 <li>Clear explanations for complex concepts</li>
@@ -77,12 +77,12 @@ function Home() {
                         </div>
                         <button
                             onClick={handleDoubtSolving}
-                            className="w-full flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
+                            className="mt-8 w-full flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
                         >
                             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
-                            Ask a Doubt (Coming Soon)
+                            Ask a Doubt
                         </button>
                     </div>
                 </div>
