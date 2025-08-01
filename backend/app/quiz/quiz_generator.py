@@ -45,32 +45,43 @@ class QuizGenerator(LLMConfig):
             current_Questions = {}
 
         parser = JsonOutputParser(pydantic_object=Quiz)
-        for i in range(N):
+        max_attempts = N * 5  # Try at most 5 times per question
+        attempts = 0
+
+        while len(current_Questions) < N and attempts < max_attempts:
+            attempts += 1
             try:
+                previous_questions = [q['question'] for q in current_Questions.values()]
+                prev_q_text = "\n".join(previous_questions)
                 prompt = PromptTemplate(
-                    template="Answer the user query.\n{format_instructions}\n{query}\n",
+                    template=(
+                        "Answer the user query.\n{format_instructions}\n{query}\n"
+                    ),
                     input_variables=["query"],
                     partial_variables={"format_instructions": parser.get_format_instructions()},
                 )
-                chain = prompt | self.llm | parser
-                q = rf'''Generate a unique question from the following context. context: {context}. The following should be the structure for each question:
-                {{'question': question, 'opt1': option 1, 'opt2': option 2, 'opt3': option 3, 'opt4': option 4, 'answer': correct option}}
-                Every question should be unique and have all four options along with the answer and explanation.
-                '''
+                chain = prompt | self.llm | parser  # <-- Define chain here
+                q = rf'''Generate a unique question from the following context. context: {context}.
+Do NOT repeat any of these questions: {prev_q_text if prev_q_text else "None"}.
+The following should be the structure for each question:
+{{'question': question, 'opt1': option 1, 'opt2': option 2, 'opt3': option 3, 'opt4': option 4, 'answer': correct option}}
+Every question should be unique and have all four options along with the answer and explanation.
+'''
                 r = chain.invoke({"query": q})
 
+                # Check for duplicate question
+                if r['question'] in previous_questions:
+                    continue  # Skip and try again
+
                 if self.outputCheck(r):
-                    self.finalResult['question' + str(len(self.finalResult) + 1)] = dict(r)
-                    if len(self.finalResult) == N:
-                        break
-                else:
-                    # Recursive call to generate remaining questions
-                    await self.generateQuiz(context, self.finalResult, N - len(self.finalResult))
+                    current_Questions['question' + str(len(current_Questions) + 1)] = dict(r)
+                # else: just try again (no recursion)
+
             except Exception as e:
                 traceback.print_exc()
-                new_prompt = rf'''The previous question raised {e}, so please generate a new question'''
-                await self.generateQuiz(context, self.finalResult, N - len(self.finalResult))
-            
+                # Just try again, don't recurse
+
+        self.finalResult = current_Questions
         return self.finalResult
             
     def outputCheck(self,r):

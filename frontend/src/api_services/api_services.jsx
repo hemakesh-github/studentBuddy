@@ -45,3 +45,28 @@ export const generateQuiz = async (file) => {
         return null;
     }
 }
+
+export const solveDoubt = async ({ question, pdf, subjects, conversation }) => {
+    try {
+        const token = getToken();
+        if (!token) throw new Error('No authentication token found');
+
+        const formData = new FormData();
+        if (question) formData.append('question', question);
+        if (pdf) formData.append('context_pdf', pdf);
+        if (subjects && subjects.length > 0) formData.append('subjects', subjects.join(','));
+        if (conversation) formData.append('conversation', JSON.stringify(conversation));
+
+        const response = await axios.post(`${BASE_URL}/api/solve-doubt`, formData, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'multipart/form-data'
+            }
+        });
+
+        return response.data;
+    } catch (error) {
+        console.error('Error solving doubt:', error);
+        return { error: error.message };
+    }
+};

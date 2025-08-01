@@ -12,8 +12,7 @@ function Home() {
     };
 
     const handleDoubtSolving = () => {
-        // Placeholder for doubt solving feature
-        console.log('Doubt solving feature coming soon!');
+        navigate('/doubt-solver');
     };
 
     return (

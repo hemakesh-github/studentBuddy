@@ -1,5 +1,5 @@
 from datetime import timedelta
-from fastapi import FastAPI, Depends, HTTPException, status, UploadFile, File
+from fastapi import FastAPI, Depends, HTTPException, status, UploadFile, File, Body, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
@@ -10,6 +10,7 @@ from pathlib import Path
 import asyncio
 import time
 import platform
+import json
 
 from app import auth
 from app.database import get_db, engine
@@ -227,6 +228,79 @@ async def generate_quiz_from_document(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"An error occurred during quiz generation: {str(e)}"
         )
+
+@app.post("/api/solve-doubt")
+async def solve_doubt(
+    question: str = Form(None),
+    subjects: str = Form(None),
+    conversation: str = Form(None),
+    context_pdf: UploadFile = File(None),
+    current_user: models.User = Depends(security.get_current_active_user)
+):
+    try:
+        # Handle PDF file if provided
+        pdf_content = None
+        if context_pdf is not None:
+            pdf_content = await context_pdf.read()
+            # You can save or process the pdf_content here
+
+        # Parse subjects
+        subject_list = []
+        if subjects:
+            subject_list = [s.strip() for s in subjects.split(',') if s.strip()]
+
+        # Parse conversation history
+        conversation_history = []
+        if conversation:
+            try:
+                conversation_history = json.loads(conversation)
+            except Exception:
+                conversation_history = []
+
+        # Compose prompt for LLM
+        prompt = "You are an AI tutor. Answer the user's academic question in a clear, step-by-step way."
+        if subjects:
+            subject_list = [s.strip() for s in subjects.split(',') if s.strip()]
+            prompt += f" Subject(s): {', '.join(subject_list)}."
+        if context_pdf is not None:
+            prompt += " (A context PDF was provided.)"
+
+        # Add conversation history to prompt
+        if conversation_history:
+            for msg in conversation_history:
+                if msg['role'] == 'user':
+                    prompt += f"\nUser: {msg['content']}"
+                else:
+                    prompt += f"\nAI: {msg['content']}"
+        elif question:
+            prompt += f"\nUser: {question}"
+
+        prompt += "\nAI:"
+
+        llm = QuizGenerator()
+        answer = None
+        reasoning_steps = []
+        max_iterations = 3
+        current_prompt = prompt
+
+        for i in range(max_iterations):
+            response = llm.llm.invoke(current_prompt)
+            answer_text = response.content if hasattr(response, 'content') else str(response)
+            reasoning_steps.append(answer_text)
+            current_prompt = (
+                f"{prompt}\nPrevious answer attempt:\n{answer_text}\n\n"
+                "Review the above answer. If there are mistakes, gaps, or unclear steps, correct and improve the answer. "
+                "If the answer is already correct and clear, just return it as is."
+            )
+            answer = answer_text
+
+        return {
+            "answer": answer,
+            "reasoning_steps": reasoning_steps
+        }
+    except Exception as e:
+        return {"error": str(e)}
+    return 1
 
 def outputCheck(self, r):
     """

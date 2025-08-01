@@ -8,6 +8,18 @@ function Quiz() {
     const [score, setScore] = useState(0);
     const [showScore, setShowScore] = useState(false);
 
+    const handleAnswerSelect = (sectionId, questionId, optKey) => {
+        const uniqueId = `${sectionId}_${questionId}`;
+        setSelectedAnswers(prev => ({
+            ...prev,
+            [uniqueId]: optKey
+        }));
+        setShowExplanation(prev => ({
+            ...prev,
+            [uniqueId]: true
+        }));
+    };
+
     console.log("Quiz Questions in Quiz Component:", quizQuestions); // Debugging
 
     const totalQuestions = quizQuestions ? 

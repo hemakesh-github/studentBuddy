@@ -8,6 +8,7 @@ import QuizContextProvider from './context/QuizContext';
 import Navbar from './components/Navbar';
 import Home from './components/Home';
 import Protected from './auth/Protected';
+import DoubtSolver from './components/DoubtSolver';
 
 
 function App() {
@@ -27,6 +28,11 @@ function App() {
                     <Route path="/quiz" element={
                         <Protected>
                             <Quiz />
+                        </Protected>
+                    } />
+                    <Route path="/doubt-solver" element={
+                        <Protected>
+                            <DoubtSolver />
                         </Protected>
                     } />
                 </Routes>
