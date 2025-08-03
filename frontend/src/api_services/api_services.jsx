@@ -1,9 +1,9 @@
 import axios from 'axios';
 import { getToken } from '../auth/Auth';
-const BASE_URL = 'http://localhost:8000';
+const BASE_URL = 'https://studentbuddy-swpo.onrender.com';
 
 export const performLogin = async (formData) => {
-    const response = await axios.post('http://localhost:8000/login', formData, {
+    const response = await axios.post('https://studentbuddy-swpo.onrender.com/login', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -13,7 +13,7 @@ export const performLogin = async (formData) => {
 }
 
 export const performRegister = async (data) => {
-    const response = await axios.post('http://localhost:8000/users/', data, {
+    const response = await axios.post('https://studentbuddy-swpo.onrender.com/users/', data, {
         headers: {
             'Content-Type': 'application/json',
         },
