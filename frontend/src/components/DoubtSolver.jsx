@@ -101,8 +101,8 @@ function DoubtSolver() {
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-lg mx-auto">
-                <div className="bg-white rounded-xl shadow-2xl overflow-hidden">
+            <div className="w-100 mx-auto">
+                <div className="bg-white rounded-xl shadow-2xl overflow-hidden w-90 h-100">
                     <div className="px-6 py-8 sm:p-10">
                         <div className="text-center">
                             <h1 className="text-3xl font-extrabold text-gray-900 mb-2">
@@ -149,8 +149,8 @@ function DoubtSolver() {
                                         onChange={handleCustomSubjectInput}
                                         onKeyDown={handleCustomSubjectKeyDown}
                                         placeholder="Add other subject"
-                                        className="px-3 py-1 rounded-full border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-                                        style={{ minWidth: 120 }}
+                                        className="px-3 py-1 rounded-full border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 h-40"
+                                        style={{ minWidth: 120, height:"35vh" }}
                                     />
                                     <button
                                         type="button"
