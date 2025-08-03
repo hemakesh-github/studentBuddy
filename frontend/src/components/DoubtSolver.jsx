@@ -117,7 +117,7 @@ function DoubtSolver() {
     const clearError = () => setError('');
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex flex-col">
+        <div className="min-h-[92vh] bg-gradient-to-b from-blue-50 to-white flex flex-col">
             {/* Header */}
             <div className="bg-white/80 backdrop-blur-sm border-b border-blue-100 sticky top-0 z-10">
                 <div className="max-w-6xl mx-auto px-4 py-4">
