@@ -6,7 +6,7 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 
-from . import models, schemas
+from .. import models, schemas  # Use relative imports
 from ..database import get_db
 
 # Security configuration
@@ -47,11 +47,11 @@ async def get_current_user(
         username: str = payload.get("sub")
         if username is None:
             raise credentials_exception
-        token_data = schemas.TokenData(username=username)
+        token_data = schemas.TokenData(email=username)
     except JWTError:
         raise credentials_exception
     
-    user = db.query(models.User).filter(models.User.username == token_data.username).first()
+    user = db.query(models.User).filter(models.User.username == username).first()
     if user is None:
         raise credentials_exception
     return user
@@ -61,4 +61,4 @@ async def get_current_active_user(
 ) -> models.User:
     if not current_user.is_active:
         raise HTTPException(status_code=400, detail="Inactive user")
-    return current_user 
+    return current_user

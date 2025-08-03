@@ -10,6 +10,7 @@ class TokenData(BaseModel):
 
 class UserBase(BaseModel):
     email: EmailStr
+    username: str
 
 class UserCreate(UserBase):
     password: str
@@ -33,4 +34,4 @@ class Quiz(QuizBase):
     user_id: int
 
     class Config:
-        from_attributes = True 
+        from_attributes = True

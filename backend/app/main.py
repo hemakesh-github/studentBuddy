@@ -12,11 +12,11 @@ import time
 import platform
 import json
 
-from app import auth
-from app.database import get_db, engine
-from app.auth import models, schemas, security
-from app.quiz.document_parser import DocumentParserFactory
-from app.quiz.quiz_generator import QuizGenerator
+from . import models, schemas  # Use relative imports
+from .database import get_db, engine
+from .auth import security
+from .document_parser import DocumentParserFactory  # Remove backend prefix
+from .quiz.quiz_generator import QuizGenerator
 
 # Workaround for Windows event loop issue
 if platform.system() == "Windows":
