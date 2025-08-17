@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { solveDoubt } from '../api_services/api_services';
+import { solveDoubt, getDoubtHistory, getDoubtById } from '../api_services/api_services';
+import { useParams } from 'react-router-dom';
 
 const SUBJECT_OPTIONS = [
     "Mathematics", "Physics", "Chemistry", "Biology", "Computer Science",
@@ -7,15 +8,20 @@ const SUBJECT_OPTIONS = [
 ];
 
 function DoubtSolver() {
+    const { doubtId } = useParams();
     const [question, setQuestion] = useState('');
     const [conversation, setConversation] = useState([]);
+    const [doubtLoaded, setDoubtLoaded] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     // const [pdf, setPdf] = useState(null); // Commented out PDF functionality
+    const [selectedSubject, setSelectedSubject] = useState('');
     const [subjects, setSubjects] = useState([]);
     const [customSubject, setCustomSubject] = useState('');
     // const [showSettings, setShowSettings] = useState(false); // Removed settings toggle
     const [isFirstMessage, setIsFirstMessage] = useState(true);
+    const [image, setImage] = useState(null);
+    const [imagePreview, setImagePreview] = useState(null);
     const messagesEndRef = useRef(null);
     const textareaRef = useRef(null);
 
@@ -26,6 +32,24 @@ function DoubtSolver() {
     useEffect(() => {
         scrollToBottom();
     }, [conversation, loading]);
+
+    // Load doubt if doubtId is present
+    useEffect(() => {
+        const loadDoubt = async () => {
+            if (!doubtId) return;
+            try {
+                const found = await getDoubtById(doubtId);
+                if (found) {
+                    setConversation(found.conversation_history || []);
+                    setQuestion('');
+                    setSubjects(found.subjects && typeof found.subjects === 'string' ? found.subjects.split(',').map(s => s.trim()) : found.subjects || []);
+                }
+            } catch (err) {
+                // ignore
+            }
+        };
+        loadDoubt();
+    }, [doubtId]);
 
     // Auto-resize textarea
     useEffect(() => {
@@ -65,6 +89,48 @@ function DoubtSolver() {
     // const handlePdfChange = (e) => setPdf(e.target.files[0]);
     // const handleRemovePdf = () => setPdf(null);
 
+    // Image handlers
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                setError('Please select a valid image file');
+                return;
+            }
+            
+            // Validate file size (max 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                setError('Image size should be less than 5MB');
+                return;
+            }
+
+            setImage(file);
+            
+            // Create preview
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                setImagePreview(e.target.result);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handleRemoveImage = () => {
+        setImage(null);
+        setImagePreview(null);
+    };
+
+    // Convert image to base64
+    const convertImageToBase64 = (file) => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!question.trim() || loading) return;
@@ -84,6 +150,7 @@ function DoubtSolver() {
             const data = await solveDoubt({
                 question: currentQuestion,
                 // pdf, // Commented out PDF
+                image, // Add image to the request
                 subjects,
                 conversation: conversation
             });
@@ -92,7 +159,6 @@ function DoubtSolver() {
                 setConversation(prev => [...prev, { role: 'ai', content: data.answer }]);
             } else {
                 setError(data?.error || 'No answer received');
-                // Remove the user message if no response
                 setConversation(conversation);
             }
         } catch (err) {
@@ -111,6 +177,8 @@ function DoubtSolver() {
         setError('');
         setIsFirstMessage(true);
         // setPdf(null); // Commented out PDF
+        setImage(null);
+        setImagePreview(null);
         setSubjects([]);
     };
 
@@ -375,11 +443,80 @@ function DoubtSolver() {
             {/* Input Area */}
             <div className="bg-white/80 backdrop-blur-sm border-t border-gray-200">
                 <div className="max-w-6xl mx-auto px-4 py-4">
+                    {/* Image Upload Section */}
+                    <div className="mb-3 p-3 bg-gray-50 rounded-xl border border-gray-200">
+                        <div className="flex items-center justify-between mb-2">
+                            <span className="text-sm font-medium text-gray-700">📎 Attach Image (Optional)</span>
+                            {image && (
+                                <button
+                                    type="button"
+                                    onClick={handleRemoveImage}
+                                    className="text-red-500 hover:text-red-700 transition-colors text-sm"
+                                >
+                                    Remove
+                                </button>
+                            )}
+                        </div>
+                        
+                        {!image ? (
+                            <label className="flex items-center justify-center w-full h-16 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-all">
+                                <div className="text-center">
+                                    <svg className="w-6 h-6 mx-auto text-gray-400 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                    <span className="text-sm text-gray-600">Click to upload image</span>
+                                </div>
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleImageChange}
+                                    className="hidden"
+                                    disabled={loading}
+                                />
+                            </label>
+                        ) : (
+                            <div className="flex items-center gap-3">
+                                <img 
+                                    src={imagePreview} 
+                                    alt="Preview" 
+                                    className="w-16 h-16 object-cover rounded-lg border"
+                                />
+                                <div className="flex-1">
+                                    <p className="text-sm text-gray-700 font-medium">{image.name}</p>
+                                    <p className="text-xs text-gray-500">{(image.size / 1024 / 1024).toFixed(2)} MB</p>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Legacy Image Preview - Remove this section */}
+                    {/* {imagePreview && (
+                        <div className="mb-3 p-3 bg-gray-50 rounded-xl border border-gray-200">
+                            <div className="flex items-center justify-between mb-2">
+                                <span className="text-sm font-medium text-gray-700">Attached Image:</span>
+                                <button
+                                    type="button"
+                                    onClick={handleRemoveImage}
+                                    className="text-red-500 hover:text-red-700 transition-colors"
+                                >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <img 
+                                src={imagePreview} 
+                                alt="Preview" 
+                                className="max-w-xs max-h-32 object-contain rounded-lg border"
+                            />
+                        </div>
+                    )} */}
+                    
                     <form onSubmit={handleSubmit} className="flex gap-3">
                         <div className="flex-1 relative">
                             <textarea
                                 ref={textareaRef}
-                                className="w-full border border-gray-200 rounded-xl px-4 py-3 pr-12 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all shadow-sm"
+                                className="w-full border border-gray-200 rounded-xl px-4 py-3 pr-16 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all shadow-sm"
                                 rows={1}
                                 placeholder="Ask your academic doubt here... (Press Enter to send, Shift+Enter for new line)"
                                 value={question}
@@ -399,7 +536,7 @@ function DoubtSolver() {
                             />
                             
                             {/* Character count */}
-                            <div className="absolute bottom-2 right-12 text-xs text-gray-400">
+                            <div className="absolute bottom-2 right-2 text-xs text-gray-400">
                                 {question.length}/1000
                             </div>
                         </div>

@@ -6,7 +6,12 @@ import { getToken } from '../auth/Auth';
 
 function QuizForm() {
     const navigate = useNavigate();
-    const { quizQuestions, setQuizQuestions, loading, setLoading, error, setError } = useContext(QuizContext);
+    const { 
+        quizQuestions, setQuizQuestions, 
+        loading, setLoading, 
+        error, setError,
+        setCurrentQuizId, setQuizMetadata 
+    } = useContext(QuizContext);
     const [selectedFile, setSelectedFile] = useState(null);
 
     useEffect(() => {
@@ -39,6 +44,17 @@ function QuizForm() {
             if (questions) {
                 console.log(questions)
                 setQuizQuestions(questions.data);
+                
+                // Store quiz ID and metadata in context
+                if (questions.quiz_id) {
+                    setCurrentQuizId(questions.quiz_id);
+                    setQuizMetadata({
+                        filename: selectedFile.name,
+                        upload_time: new Date(),
+                        processing_time: questions.processing_time
+                    });
+                }
+                
                 if (questions.warning) {
                     console.warn(questions.warning);
                 }

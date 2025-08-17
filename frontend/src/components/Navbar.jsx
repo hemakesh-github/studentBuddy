@@ -80,26 +80,48 @@ const Navbar = () => {
                         )}
 
                         {isLoggedIn ? (
-                            <button
-                                onClick={handleLogout}
-                                className="inline-flex items-center px-4 py-2 border border-transparent 
-                                         text-sm font-medium rounded-md text-white bg-red-600 
-                                         hover:bg-red-700 focus:outline-none focus:ring-2 
-                                         focus:ring-offset-2 focus:ring-red-500"
-                            >
-                                <svg 
-                                    className="h-5 w-5 mr-1" 
-                                    fill="none" 
-                                    strokeLinecap="round" 
-                                    strokeLinejoin="round" 
-                                    strokeWidth="2" 
-                                    viewBox="0 0 24 24" 
-                                    stroke="currentColor"
+                            <>
+                                <button
+                                    onClick={() => navigate('/profile')}
+                                    className="inline-flex items-center px-3 py-2 border border-transparent 
+                                             text-sm font-medium rounded-md text-purple-700 bg-purple-100 
+                                             hover:bg-purple-200 focus:outline-none focus:ring-2 
+                                             focus:ring-offset-2 focus:ring-purple-500 transition"
                                 >
-                                    <path d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-                                </svg>
-                                Logout
-                            </button>
+                                    <svg 
+                                        className="h-5 w-5 mr-1" 
+                                        fill="none" 
+                                        strokeLinecap="round" 
+                                        strokeLinejoin="round" 
+                                        strokeWidth="2" 
+                                        viewBox="0 0 24 24" 
+                                        stroke="currentColor"
+                                    >
+                                        <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                    </svg>
+                                    Profile
+                                </button>
+                                <button
+                                    onClick={handleLogout}
+                                    className="inline-flex items-center px-4 py-2 border border-transparent 
+                                             text-sm font-medium rounded-md text-white bg-red-600 
+                                             hover:bg-red-700 focus:outline-none focus:ring-2 
+                                             focus:ring-offset-2 focus:ring-red-500"
+                                >
+                                    <svg 
+                                        className="h-5 w-5 mr-1" 
+                                        fill="none" 
+                                        strokeLinecap="round" 
+                                        strokeLinejoin="round" 
+                                        strokeWidth="2" 
+                                        viewBox="0 0 24 24" 
+                                        stroke="currentColor"
+                                    >
+                                        <path d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                                    </svg>
+                                    Logout
+                                </button>
+                            </>
                         ) : (
                             <button
                                 onClick={handleLogin}
@@ -117,8 +139,7 @@ const Navbar = () => {
                                     viewBox="0 0 24 24" 
                                     stroke="currentColor"
                                 >
-                                                                        <path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-
+                                    <path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                                 </svg>
                                 Login
                             </button>
