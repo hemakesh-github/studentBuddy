@@ -5,6 +5,7 @@ import docx
 from pathlib import Path
 import logging
 from abc import ABC, abstractmethod
+# from .ocr import SimpleOCR
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -90,6 +91,33 @@ class DocumentParser(ABC):
 class PDFParser(DocumentParser):
     """Parser for PDF documents."""
     
+    def is_likely_scanned_pdf(file_path: str, min_text_chars: int = 100) -> bool:
+        """
+        Heuristically checks if a PDF is likely scanned.
+        Considers both presence of text and XObject images.
+        """
+        try:
+            with open(file_path, 'rb') as file:
+                reader = PyPDF2.PdfReader(file)
+                total_text = ""
+                has_image = False
+
+                for page in reader.pages:
+                    text = page.extract_text()
+                    if text:
+                        total_text += text.strip()
+                    if '/XObject' in page.get('/Resources', {}):
+                        has_image = True
+
+                if len(total_text) >= min_text_chars:
+                    return False  # Enough text → not scanned
+            return has_image  # Else → scanned only if images present
+
+        except Exception as e:
+            logger.error(f"Error analyzing PDF: {e}")
+            return True  # assume scanned if uncertain
+
+
     def parse(self, file_path: str) -> List[DocumentSection]:
         """
         Parse PDF document and return sections.
@@ -100,6 +128,13 @@ class PDFParser(DocumentParser):
         Returns:
             List[DocumentSection]: List of document sections
         """
+
+        if self.is_likely_scanned_pdf(file_path):
+            print(f"Detected likely scanned PDF: {file_path}")
+            # logger.info(f"Detected likely scanned PDF: {file_path}")
+            # with open(file_path, 'rb') as file:
+            #     chunks = SimpleOCR(file.read())
+            # return chunks
         sections = []
         try:
             with open(file_path, 'rb') as file:
@@ -108,9 +143,8 @@ class PDFParser(DocumentParser):
                 for page_num in range(len(pdf_reader.pages)):
                     page = pdf_reader.pages[page_num]
                     text = page.extract_text()
-                    
                     if not text.strip():
-                        continue
+                        return []
                         
                     page_sections = self._split_into_sections(text)
                     

@@ -23,7 +23,7 @@ class QuizGenerator(LLMConfig):
    
     def __init__(
         self,
-        model_name: str = "llama-3.3-70b-versatile",
+        model_name: str = "gemini-2.5-flash",
         temperature: float = 0.2,
         max_tokens: int = 1024
     ):
