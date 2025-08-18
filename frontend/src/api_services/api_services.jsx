@@ -15,11 +15,13 @@ export const performLogin = async (formData) => {
         data.append('password', formData.password);
     }
 
+    console.log(data)
     const response = await axios.post(`${BASE_URL}/login`, data, {
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
         },
     });
+    
 
     return response.data;
 }

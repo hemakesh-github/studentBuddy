@@ -17,9 +17,7 @@ import platform
 import json
 import traceback
 import base64
-
 from langchain_core.messages import HumanMessage
-
 from . import models, schemas  # Use relative imports
 from .database import get_db, engine
 from .auth import security
@@ -35,7 +33,7 @@ app = FastAPI()
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://studentbuddy-1.onrender.com/", "https://localhost:5174"],  # Allow all origins
+    allow_origins=["https://studentbuddy-1.onrender.com/", "https://localhost:5174/"],  # Allow all origins
     allow_credentials=True,
     allow_methods=["*"],  # Allow all methods
     allow_headers=["*"],  # Allow all headers
@@ -55,6 +53,7 @@ async def login_for_access_token(
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db)
 ):
+    print(f"Login attempt for user: {form_data.username}")
     user = db.query(models.User).filter(models.User.username == form_data.username).first()
     if not user or not security.verify_password(form_data.password, user.hashed_password):
         raise HTTPException(
@@ -66,6 +65,7 @@ async def login_for_access_token(
     access_token = security.create_access_token(
         data={"sub": user.username}, expires_delta=access_token_expires
     )
+    print(access_token)
     return {"access_token": access_token, "token_type": "bearer"}
 
 @app.post("/token", response_model=schemas.Token)
