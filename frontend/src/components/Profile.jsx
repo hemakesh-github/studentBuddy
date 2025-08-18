@@ -29,6 +29,7 @@ function Profile() {
         try {
             setLoading(true);
             const profileData = await getUserProfile();
+            console.log('Profile Data:', profileData);
             setProfile(profileData);
         } catch (err) {
             setError('Failed to load profile data');
@@ -135,20 +136,18 @@ console.log('Quiz Data:', quizData);
                 <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
                     <div className="flex items-center space-x-6">
                         <div className="w-20 h-20 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-full flex items-center justify-center text-white text-2xl font-bold">
-                            {profile?.user?.username?.charAt(0).toUpperCase()}
+                            {profile?.username?.charAt(0).toUpperCase()}
                         </div>
                         <div className="flex-1">
-                            <h1 className="text-3xl font-bold text-gray-800">{profile?.user?.username}</h1>
-                            <p className="text-gray-600">{profile?.user?.email}</p>
-                            <p className="text-sm text-gray-500">
-                                Member since {formatDate(profile?.user?.created_at)}
-                            </p>
+                            <h1 className="text-3xl font-bold text-gray-800">{profile?.username}</h1>
+                            <p className="text-gray-600">{profile?.email}</p>
+                            
                         </div>
                     </div>
                 </div>
 
                 {/* Stats Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                     <div className="bg-white rounded-xl shadow-lg p-6">
                         <div className="flex items-center">
                             <div className="p-3 bg-blue-100 rounded-lg">
@@ -159,34 +158,6 @@ console.log('Quiz Data:', quizData);
                             <div className="ml-4">
                                 <p className="text-sm text-gray-600">Total Quizzes</p>
                                 <p className="text-2xl font-bold text-gray-800">{profile?.total_quizzes || 0}</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="bg-white rounded-xl shadow-lg p-6">
-                        <div className="flex items-center">
-                            <div className="p-3 bg-green-100 rounded-lg">
-                                <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                            </div>
-                            <div className="ml-4">
-                                <p className="text-sm text-gray-600">Quiz Attempts</p>
-                                <p className="text-2xl font-bold text-gray-800">{profile?.total_attempts || 0}</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="bg-white rounded-xl shadow-lg p-6">
-                        <div className="flex items-center">
-                            <div className="p-3 bg-purple-100 rounded-lg">
-                                <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                                </svg>
-                            </div>
-                            <div className="ml-4">
-                                <p className="text-sm text-gray-600">Average Score</p>
-                                <p className="text-2xl font-bold text-gray-800">{profile?.average_score?.toFixed(1) || '0.0'}%</p>
                             </div>
                         </div>
                     </div>
@@ -277,7 +248,7 @@ console.log('Quiz Data:', quizData);
                                                     </div>
                                                 </div>
                                                 
-                                                {quiz.attempts && quiz.attempts.length > 0 && (
+                                                {/* {quiz.attempts && quiz.attempts.length > 0 && (
                                                     <div className="bg-gray-50 rounded-lg p-3">
                                                         <h5 className="text-sm font-medium text-gray-700 mb-2">
                                                             Attempts ({quiz.total_attempts || quiz.attempts.length}) - Best Score: {quiz.best_score || 'N/A'}%
@@ -285,12 +256,7 @@ console.log('Quiz Data:', quizData);
                                                         <div className="space-y-2">
                                                             {(quiz.attempts || []).slice(0, 3).map((attempt) => (
                                                                 <div key={attempt.id} className="flex items-center justify-between text-sm bg-white p-3 rounded border">
-                                                                    <div>
-                                                                        <span className="font-medium">Score: {attempt.score}% ({attempt.score}/{attempt.total_questions})</span>
-                                                                        <span className="text-gray-500 ml-4">
-                                                                            Time: {Math.floor(attempt.time_taken / 60)}m {attempt.time_taken % 60}s
-                                                                        </span>
-                                                                    </div>
+                                                
                                                                     <div className="flex items-center space-x-3">
                                                                         <span className="text-gray-500">
                                                                             {formatDate(attempt.completed_at)}
@@ -306,7 +272,7 @@ console.log('Quiz Data:', quizData);
                                                             ))}
                                                         </div>
                                                     </div>
-                                                )}
+                                                )} */}
                                             </div>
                                         ))}
                                     </div>
