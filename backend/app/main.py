@@ -53,7 +53,6 @@ async def login_for_access_token(
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db)
 ):
-    print(f"Login attempt for user: {form_data.username}")
     user = db.query(models.User).filter(models.User.username == form_data.username).first()
     if not user or not security.verify_password(form_data.password, user.hashed_password):
         raise HTTPException(
@@ -65,7 +64,6 @@ async def login_for_access_token(
     access_token = security.create_access_token(
         data={"sub": user.username}, expires_delta=access_token_expires
     )
-    print(access_token)
     return {"access_token": access_token, "token_type": "bearer"}
 
 @app.post("/token", response_model=schemas.Token)
@@ -239,7 +237,6 @@ async def generate_quiz_from_document(
             # If database save fails, clean up file and continue
             if file_path and file_path.exists():
                 os.remove(file_path)
-            print(f"Error saving quiz to database: {str(e)}")
             return {
                 "data": quiz_results,
                 "processing_time": round(time.time() - start_time, 2),
@@ -269,9 +266,7 @@ async def solve_doubt(
     current_user: models.User = Depends(security.get_current_active_user),
     db: Session = Depends(get_db)
 ):
-    try:
-        print("Received request to solve doubt")
-        
+    try:        
         # Validate that we have a question
         if not question or not question.strip():
             raise HTTPException(
@@ -282,7 +277,6 @@ async def solve_doubt(
         # Handle PDF file if provided
         pdf_content = None
         if context_pdf is not None:
-            print("Processing PDF for context...")
             try:
                 file_path = UPLOAD_DIR / context_pdf.filename
                 with file_path.open("wb") as buffer:
@@ -294,7 +288,6 @@ async def solve_doubt(
                     max_section_length=1000
                 )
                 sections = parser.parse(str(file_path))
-                print(f"Parsed PDF sections: {len(sections)}")
                 
                 # Combine PDF content
                 pdf_text = ""
@@ -307,13 +300,11 @@ async def solve_doubt(
                 # Clean up PDF file after processing
                 os.remove(file_path)
             except Exception as e:
-                print(f"Error processing PDF: {str(e)}")
-                # Continue without PDF context if processing fails
+                pass
 
         # Handle image file if provided
         image_data = None
         if context_image is not None:
-            print("Processing image for context...")
             try:
                 # Read image content
                 image_content = await context_image.read()
@@ -326,13 +317,9 @@ async def solve_doubt(
                         "url": f"data:{context_image.content_type};base64,{image_base64}"
                     }
                 }
-                print(f"Processed image: {context_image.filename}, type: {context_image.content_type}")
                 
             except Exception as e:
-                print(f"Error processing image: {str(e)}")
-                # Continue without image context if processing fails
-
-        print(f"Final question: {question}")
+                pass
 
         # Parse subjects
         subject_list = []
@@ -345,7 +332,6 @@ async def solve_doubt(
             try:
                 conversation_history = json.loads(conversation)
             except Exception as e:
-                print(f"Error parsing conversation: {e}")
                 conversation_history = []
 
         # Compose prompt for LLM
@@ -372,7 +358,6 @@ async def solve_doubt(
         # Add current question
         prompt += f"\n\nCurrent Question: {question}\n\nAI:"
 
-        print(f"Sending prompt to LLM: {prompt[:200]}...")
 
         # Generate response using LLM directly
         from .llm.config import LLMConfig
@@ -386,38 +371,28 @@ async def solve_doubt(
             ]
             message_content.append(image_data)
             
-            print(f"Sending multimodal message with {len(message_content)} parts...")
             
             # Use HumanMessage for multimodal input
             human_message = HumanMessage(content=message_content)
             response = llm_config.llm.invoke([human_message])
             
-            print(f"Multimodal response type: {type(response)}")
-            print(f"Multimodal response: {response}")
-            print(f"Response attributes: {dir(response)}")
+          
         else:
             # Use simple string invocation for text-only
-            print("Sending text-only message...")
             response = llm_config.llm.invoke(prompt)
-            print(f"Text response type: {type(response)}")
             
         # Enhanced response parsing
         answer = None
         if hasattr(response, 'content'):
             answer = response.content
-            print(f"Using response.content: {answer[:100] if answer else 'None'}...")
         elif isinstance(response, str):
             answer = response
-            print(f"Response is string: {answer[:100]}...")
         else:
             answer = str(response)
-            print(f"Converting response to string: {answer[:100]}...")
             
         if not answer or not answer.strip():
-            print("WARNING: Empty or None answer received")
             answer = "Sorry, I couldn't generate a response. Please try again."
 
-        print(f"Generated answer: {answer[:100]}...")
 
         # Save the doubt to database
         try:
@@ -435,9 +410,7 @@ async def solve_doubt(
             db.add(doubt)
             db.commit()
             db.refresh(doubt)
-            print(f"Saved doubt with ID: {doubt.id}")
         except Exception as e:
-            print(f"Error saving doubt: {str(e)}")
             # Don't fail the request if saving fails
             pass
 
@@ -454,7 +427,6 @@ async def solve_doubt(
     except HTTPException:
         raise
     except Exception as e:
-        print(f"Error in solve_doubt: {str(e)}")
         import traceback
         traceback.print_exc()  # Print full traceback for debugging
         raise HTTPException(
@@ -489,7 +461,6 @@ async def submit_quiz_attempt(
             "message": "Quiz attempt saved successfully"
         }
     except Exception as e:
-        print(f"Error saving quiz attempt: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to save quiz attempt: {str(e)}"
@@ -585,15 +556,7 @@ async def get_quiz(
     ).first()
     if not quiz:
         raise HTTPException(status_code=404, detail="Quiz not found")
-    print(f"Retrieved quiz: {quiz.title} (ID: {quiz.id}), {quiz}")
-    print({
-        "id": quiz.id,
-        "title": quiz.title,
-        "content": quiz.content,
-        "filename": quiz.filename,
-        "created_at": quiz.created_at,
-        "total_questions": sum(len(section) for section in quiz.content) if quiz.content else 0
-    })
+   
     return {
         "id": quiz.id,
         "title": quiz.title,
