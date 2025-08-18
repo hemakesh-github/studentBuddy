@@ -1,14 +1,25 @@
-
 import axios from 'axios';
 import { getToken } from '../auth/Auth';
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://studentbuddy-swpo.onrender.com';
 
 export const performLogin = async (formData) => {
-    const response = await axios.post(`${BASE_URL}/login`, formData, {
+    // Convert FormData to URLSearchParams for OAuth2PasswordRequestForm
+    const data = new URLSearchParams();
+    
+    // Handle both FormData and regular object
+    if (formData instanceof FormData) {
+        data.append('username', formData.get('username'));
+        data.append('password', formData.get('password'));
+    } else {
+        data.append('username', formData.username);
+        data.append('password', formData.password);
+    }
+
+    const response = await axios.post(`${BASE_URL}/login`, data, {
         headers: {
-          'Content-Type': 'multipart/form-data',
+            'Content-Type': 'application/x-www-form-urlencoded',
         },
-      });
+    });
 
     return response.data;
 }
